@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gojo - Personal Wellness Tracker</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --accent-calm: #4ade80;
+            --accent-elevated: #f97316;
+            --accent-warning: #ef4444;
+            --accent-blue: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-calibrating {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-tracking {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--accent-calm);
+        }
+
+        /* Main Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        /* State Display */
+        .state-display {
+            grid-column: span 2;
+        }
+
+        .state-value {
+            font-size: 64px;
+            font-weight: 700;
+            text-align: center;
+            padding: 40px 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .state-calm {
+            color: var(--accent-calm);
+        }
+
+        .state-normal {
+            color: var(--accent-blue);
+        }
+
+        .state-elevated {
+            color: var(--accent-elevated);
+        }
+
+        .state-warning {
+            color: var(--accent-warning);
+        }
+
+        /* Metrics */
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .metric-value {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .metric-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Stress Meter */
+        .stress-meter {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stress-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 8px solid var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .stress-circle::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 8px solid transparent;
+            border-top-color: var(--accent-calm);
+            transform: rotate(var(--rotation, 0deg));
+            transition: transform 0.5s ease, border-color 0.3s;
+        }
+
+        .stress-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .stress-label {
+            margin-top: 16px;
+            color: var(--text-secondary);
+        }
+
+        /* History Chart */
+        .chart-container {
+            grid-column: span 2;
+            height: 200px;
+            position: relative;
+        }
+
+        .chart {
+            width: 100%;
+            height: 160px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding-top: 20px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--accent-blue), #8b5cf6);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.3s ease;
+        }
+
+        .chart-bar.elevated {
+            background: linear-gradient(to top, var(--accent-elevated), var(--accent-warning));
+        }
+
+        /* Calibration */
+        .calibration-progress {
+            text-align: center;
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+
+        .progress-circle {
+            fill: none;
+            stroke: var(--bg-secondary);
+            stroke-width: 12;
+        }
+
+        .progress-value {
+            fill: none;
+            stroke: var(--accent-blue);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 48px;
+            font-weight: 700;
+            fill: var(--text-primary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .timeline-time {
+            color: var(--text-secondary);
+            font-size: 12px;
+            width: 60px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .tracking-active {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+
+            .state-display,
+            .chart-container {
+                grid-column: span 1;
+            }
+
+            .state-value {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">G</div>
+                <span>Gojo Wellness</span>
+            </div>
+            <div id="statusBadge" class="status-badge status-calibrating">
+                Calibrating...
+            </div>
+        </header>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Current State -->
+            <div class="card state-display">
+                <div class="card-title">Current State</div>
+                <div id="currentState" class="state-value state-normal">
+                    INITIALIZING
+                </div>
+                <div style="text-align: center; color: var(--text-secondary);">
+                    Relative to YOUR baseline
+                </div>
+            </div>
+
+            <!-- Stress Meter -->
+            <div class="card">
+                <div class="card-title">Stress Level</div>
+                <div class="stress-meter">
+                    <div class="stress-circle" id="stressCircle">
+                        <span class="stress-value" id="stressValue">0%</span>
+                    </div>
+                    <div class="stress-label">Compared to your normal</div>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="card">
+                <div class="card-title">Fractal Metrics</div>
+                <div class="metric">
+                    <div class="metric-value" id="hurstValue">0.50</div>
+                    <div class="metric-label">Hurst (Memory)</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" id="hurstBar" style="width: 50%; background: var(--accent-blue);">
+                        </div>
+                    </div>
+                </div>
+                <div class="metric" style="margin-top: 20px;">
+                    <div class="metric-value" id="higuchValue">1.50</div>
+                    <div class="metric-label">Higuchi (Complexity)</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" id="higuchBar" style="width: 50%; background: var(--accent-blue);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fractal Insight -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">Fractal Insight Engine 🧠</div>
+
+                <div style="display: flex; gap: 20px; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1.5;">
+                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Current
+                            Pattern Context</div>
+                        <div id="insightText"
+                            style="font-size: 16px; margin-top: 8px; font-weight: 500; line-height: 1.4;">
+                            Comparing patterns...
+                        </div>
+                        <div id="predictionText"
+                            style="font-size: 14px; color: var(--accent-warning); margin-top: 8px; display: none;">
+                            <!-- Alert goes here -->
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; border-left: 1px solid var(--glass-border); padding-left: 20px;">
+                        <div
+                            style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">
+                            Tag Current Mood</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button class="btn btn-secondary" style="font-size: 12px; padding: 8px;"
+                                onclick="tracker.tagMood('Flow')">🌊 Flow</button>
+                            <button class="btn btn-secondary" style="font-size: 12px; padding: 8px;"
+                                onclick="tracker.tagMood('Focus')">🎯 Focus</button>
+                            <button class="btn btn-secondary" style="font-size: 12px; padding: 8px;"
+                                onclick="tracker.tagMood('Anxious')">⚡ Anxious</button>
+                            <button class="btn btn-secondary" style="font-size: 12px; padding: 8px;"
+                                onclick="tracker.tagMood('Tired')">💤 Tired</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Check-in -->
+            <div class="card">
+                <div class="card-title">Morning Voice Check-in</div>
+                <div style="text-align: center; padding: 20px;">
+                    <div id="voiceStatus" style="font-size: 16px; margin-bottom: 15px; color: var(--text-secondary);">
+                        Speak naturally for 10 seconds
+                    </div>
+                    <button class="btn btn-primary" id="recordVoiceBtn">
+                        Start Recording
+                    </button>
+                    <div id="voiceResult" style="margin-top: 20px; display: none;">
+                        <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Voice
+                            Analysis</div>
+                        <div id="voiceState"
+                            style="font-size: 24px; font-weight: 700; color: var(--accent-blue); margin: 5px 0;">
+                            --
+                        </div>
+                        <div id="voiceMetrics" style="font-size: 14px; opacity: 0.8;"></div>
+                        <div id="voiceAlerts" style="font-size: 12px; color: var(--accent-warning); margin-top: 5px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Chart -->
+            <div class="card chart-container">
+                <div class="card-title">Session History (Last 30 snapshots)</div>
+                <div class="chart" id="historyChart"></div>
+            </div>
+
+            <!-- Baseline Info -->
+            <div class="card">
+                <div class="card-title">Your Baseline</div>
+                <div id="baselineInfo" style="text-align: center; padding: 20px;">
+                    <p style="font-size: 24px; margin-bottom: 10px;">Not calibrated</p>
+                    <p style="color: var(--text-secondary);">Move your mouse normally for 30 seconds</p>
+                    <button class="btn btn-primary" id="startCalibration" style="margin-top: 20px;">
+                        Start Calibration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Events -->
+            <div class="card">
+                <div class="card-title">Recent States</div>
+                <div class="timeline" id="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: var(--accent-blue);"></div>
+                        <div class="timeline-time">Now</div>
+                        <div>Waiting for data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Gojo Wellness Tracker - Your data stays local</p>
+            <p style="margin-top: 8px;">Powered by Fractal Analysis</p>
+        </footer>
+    </div>
+
+    <script>
+        // =================================================================
+        // GOJO WELLNESS TRACKER v2.0 (API Client)
+        // =================================================================
+
+        class WellnessTracker {
+            constructor() {
+                this.mouseX = [];
+                this.mouseY = [];
+                this.isCalibrating = false;
+                this.isTracking = false;
+                this.baseline = null;
+                this.history = [];
+
+                // Settings
+                this.sampleWindow = 100;  // Points per analysis batch
+                this.sendInterval = 2000; // ms between API calls
+
+                // DOM Elements
+                this.statusBadge = document.getElementById('statusBadge');
+                this.baselineInfo = document.getElementById('baselineInfo');
+                this.startBtn = document.getElementById('startCalibration');
+                this.recordBtn = document.getElementById('recordVoiceBtn');
+
+                // Bind events
+                this.initMouseTracking();
+                this.startBtn.addEventListener('click', () => this.startCalibration());
+                this.recordBtn.addEventListener('click', () => this.recordVoice());
+
+                // Initial check
+                this.checkStatus();
+            }
+
+            initMouseTracking() {
+                document.addEventListener('mousemove', (e) => {
+                    if (this.isCalibrating || this.isTracking) {
+                        this.mouseX.push(e.clientX);
+                        this.mouseY.push(e.clientY);
+                    }
+                });
+            }
+
+            async checkStatus() {
+                try {
+                    const res = await fetch('/api/status');
+                    const data = await res.json();
+
+                    if (data.is_calibrated) {
+                        this.baseline = data.baseline;
+                        this.startTracking();
+                    } else {
+                        this.updateUI('needs_calibration');
+                    }
+                } catch (e) {
+                    console.error('API Error:', e);
+                }
+            }
+
+            // ============================================================
+            // CALIBRATION FLOW
+            // ============================================================
+
+            async startCalibration() {
+                // Reset backend
+                await fetch('/api/reset', { method: 'POST' });
+
+                this.isCalibrating = true;
+                this.mouseX = [];
+                this.mouseY = [];
+                this.updateUI('calibrating');
+
+                const duration = 30000; // 30 seconds
+                const interval = 2000;
+                let elapsed = 0;
+
+                const calibrateLoop = setInterval(async () => {
+                    elapsed += interval;
+                    const progress = elapsed / duration;
+                    this.updateCalibrationProgress(progress);
+
+                    // Send data batch
+                    if (this.mouseX.length > 20) {
+                        await fetch('/api/calibrate/add', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                x: this.mouseX,
+                                y: this.mouseY
+                            })
+                        });
+                        this.mouseX = [];
+                        this.mouseY = [];
+                    }
+
+                    if (elapsed >= duration) {
+                        clearInterval(calibrateLoop);
+                        this.finishCalibration();
+                    }
+                }, interval);
+            }
+
+            async finishCalibration() {
+                const res = await fetch('/api/calibrate/done', { method: 'POST' });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    this.baseline = data.baseline;
+                    this.isCalibrating = false;
+                    this.startTracking();
+                } else {
+                    alert('Calibration failed. Please try again.');
+                    this.updateUI('needs_calibration');
+                    this.isCalibrating = false;
+                }
+            }
+
+            // ============================================================
+            // TRACKING FLOW
+            // ============================================================
+
+            startTracking() {
+                this.isTracking = true;
+                this.updateUI('tracking');
+
+                // Load history first
+                this.loadHistory();
+
+                // Tracking loop
+                setInterval(async () => {
+                    if (this.mouseX.length < 50) return;
+
+                    const batchX = [...this.mouseX];
+                    const batchY = [...this.mouseY];
+                    this.mouseX = [];
+                    this.mouseY = [];
+
+                    try {
+                        const res = await fetch('/api/analyze', {
+                            method: 'POST',
+                            body: JSON.stringify({ x: batchX, y: batchY })
+                        });
+
+                        if (res.ok) {
+                            const snapshot = await res.json();
+                            this.updateDashboard(snapshot);
+                        }
+                    } catch (e) {
+                        console.error('Tracking Error:', e);
+                    }
+                }, this.sendInterval);
+            }
+
+            async loadHistory() {
+                try {
+                    const res = await fetch('/api/history');
+                    const history = await res.json();
+
+                    // Populate chart with last 30
+                    const recent = history.slice(-30);
+                    const chart = document.getElementById('historyChart');
+                    chart.innerHTML = recent.map(s => {
+                        const height = Math.max(5, (s.stress_relative + 1) * 50);
+                        const elevated = s.deviation === 'elevated' ? 'elevated' : '';
+                        return `<div class="chart-bar ${elevated}" style="height: ${height}%"></div>`;
+                    }).join('');
+
+                } catch (e) { console.error(e); }
+            }
+
+            // ============================================================
+            // VOICE ANALYSIS
+            // ============================================================
+
+            async recordVoice() {
+                if (this.isRecording) return;
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.isRecording = true;
+                    this.recordBtn.textContent = 'Recording (10s)...';
+                    this.recordBtn.className = 'btn btn-secondary'; // Grey out
+
+                    const context = new AudioContext();
+                    const source = context.createMediaStreamSource(stream);
+                    const processor = context.createScriptProcessor(4096, 1, 1);
+
+                    const samples = [];
+                    processor.onaudioprocess = (e) => {
+                        if (!this.isRecording) return;
+                        const data = e.inputBuffer.getChannelData(0);
+                        samples.push(new Float32Array(data));
+                    };
+
+                    source.connect(processor);
+                    processor.connect(context.destination);
+
+                    // Stop after 10s
+                    setTimeout(async () => {
+                        this.isRecording = false;
+                        this.recordBtn.textContent = 'Analyzing...';
+
+                        stream.getTracks().forEach(t => t.stop());
+                        context.close();
+
+                        // Flatten and encode
+                        const flattened = this.flattenSamples(samples);
+                        const wavBlob = this.encodeWAV(flattened);
+
+                        // Upload
+                        try {
+                            const res = await fetch('/api/analyze/voice', {
+                                method: 'POST',
+                                body: wavBlob
+                            });
+                            const result = await res.json();
+                            this.showVoiceResult(result);
+                        } catch (e) {
+                            alert('Analysis failed: ' + e);
+                            this.recordBtn.textContent = 'Start Recording';
+                            this.recordBtn.className = 'btn btn-primary';
+                        }
+
+                    }, 10000);
+
+                } catch (e) {
+                    alert('Microphone access denied or error: ' + e);
+                }
+            }
+
+            flattenSamples(chunks) {
+                let length = 0;
+                chunks.forEach(c => length += c.length);
+                const result = new Float32Array(length);
+                let offset = 0;
+                chunks.forEach(c => {
+                    result.set(c, offset);
+                    offset += c.length;
+                });
+                return result;
+            }
+
+            encodeWAV(samples) {
+                const buffer = new ArrayBuffer(44 + samples.length * 2);
+                const view = new DataView(buffer);
+
+                // Write WAV header
+                const writeString = (view, offset, string) => {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                };
+
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + samples.length * 2, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true); // PCM
+                view.setUint16(22, 1, true); // Mono
+                view.setUint32(24, 44100, true); // Sample rate (assumed standard ctx)
+                view.setUint32(28, 44100 * 2, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true); // 16-bit
+                writeString(view, 36, 'data');
+                view.setUint32(40, samples.length * 2, true);
+
+                // Write PCM samples
+                let offset = 44;
+                for (let i = 0; i < samples.length; i++) {
+                    const s = Math.max(-1, Math.min(1, samples[i]));
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                    offset += 2;
+                }
+
+                return new Blob([view], { type: 'audio/wav' });
+            }
+
+            showVoiceResult(data) {
+                this.recordBtn.textContent = 'Start Recording';
+                this.recordBtn.className = 'btn btn-primary';
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                const result = document.getElementById('voiceResult');
+                result.style.display = 'block';
+
+                const stateEl = document.getElementById('voiceState');
+                stateEl.textContent = data.state;
+
+                const colors = {
+                    calm: 'var(--accent-calm)',
+                    stressed: 'var(--accent-warning)',
+                    anxious: 'var(--accent-elevated)',
+                    depressed: '#94a3b8',
+                    focused: 'var(--accent-blue)'
+                };
+                stateEl.style.color = colors[data.state] || 'white';
+
+                document.getElementById('voiceMetrics').innerHTML = `
+                    Stress: ${Math.round(data.stress * 100)}% | Stability: ${Math.round(data.energy * 100)}%
+                `;
+
+                if (data.alerts && data.alerts.length > 0) {
+                    document.getElementById('voiceAlerts').textContent = '⚠ ' + data.alerts.join(', ');
+                } else {
+                    document.getElementById('voiceAlerts').textContent = '';
+                }
+            }
+
+            // ============================================================
+            // UI HELPERS
+            // ============================================================
+
+            updateUI(state) {
+                if (state === 'calibrating') {
+                    this.statusBadge.textContent = 'Calibrating...';
+                    this.statusBadge.className = 'status-badge status-calibrating';
+                    this.startBtn.disabled = true;
+                    this.startBtn.textContent = 'Move mouse naturally...';
+                } else if (state === 'tracking') {
+                    this.statusBadge.textContent = 'Live Tracking';
+                    this.statusBadge.className = 'status-badge status-tracking tracking-active';
+
+                    this.baselineInfo.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
+                            <div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">BASELINE H</div>
+                                <div style="font-size: 20px; font-weight: 700;">${this.baseline.h_mean.toFixed(2)}</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">BASELINE D</div>
+                                <div style="font-size: 20px; font-weight: 700;">${this.baseline.d_mean.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; font-size: 12px; color: var(--text-secondary);">
+                            Learned from personalized calibration
+                        </div>
+                        <button class="btn btn-secondary" onclick="tracker.resetTracker()" style="margin-top: 15px; width: 100%;">
+                            Reset / Recalibrate
+                        </button>
+                    `;
+                } else {
+                    this.statusBadge.textContent = 'Needs Calibration';
+                    this.statusBadge.className = 'status-badge status-calibrating';
+                    this.startBtn.disabled = false;
+                    this.startBtn.textContent = 'Start Calibration';
+                }
+            }
+
+            updateCalibrationProgress(pct) {
+                const circle = document.getElementById('stressCircle');
+                circle.style.setProperty('--rotation', `${pct * 360}deg`);
+                document.getElementById('stressValue').textContent = `${Math.round(pct * 100)}%`;
+                document.getElementById('currentState').textContent = 'CALIBRATING';
+            }
+
+            updateDashboard(snapshot) {
+                // Update State Display
+                const stateEl = document.getElementById('currentState');
+                stateEl.textContent = snapshot.deviation.toUpperCase();
+                stateEl.className = `state-value state-${snapshot.deviation}`;
+
+                // Update Stress Meter
+                const stressPct = Math.round((snapshot.stress_relative + 1) * 50);
+                const stressVal = Math.round(snapshot.stress_relative * 100);
+                document.getElementById('stressValue').textContent =
+                    `${stressVal > 0 ? '+' : ''}${stressVal}%`;
+
+                const rotation = Math.max(0, Math.min(360, stressPct * 3.6));
+                document.getElementById('stressCircle').style.setProperty('--rotation', `${rotation}deg`);
+
+                // Update Metrics
+                document.getElementById('hurstValue').textContent = snapshot.h.toFixed(2);
+                document.getElementById('hurstBar').style.width = `${snapshot.h * 100}%`;
+
+                document.getElementById('higuchValue').textContent = snapshot.d.toFixed(2);
+                document.getElementById('higuchBar').style.width = `${(snapshot.d - 1) * 100}%`;
+
+                // Update Timeline
+                this.updateTimeline(snapshot);
+
+                // Update Chart (append one bar)
+                const chart = document.getElementById('historyChart');
+                const height = Math.max(5, (snapshot.stress_relative + 1) * 50);
+                const bar = document.createElement('div');
+                bar.className = `chart-bar ${snapshot.deviation === 'elevated' ? 'elevated' : ''}`;
+                bar.style.height = `${height}%`;
+                chart.appendChild(bar);
+
+                if (chart.children.length > 30) {
+                    chart.removeChild(chart.firstChild);
+                }
+            }
+
+            updateTimeline(snapshot) {
+                const timeline = document.getElementById('timeline');
+                const time = new Date(snapshot.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                const colors = {
+                    normal: 'var(--accent-blue)',
+                    elevated: 'var(--accent-elevated)',
+                    calm: 'var(--accent-calm)',
+                    low: 'var(--accent-calm)'
+                };
+
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <div class="timeline-dot" style="background: ${colors[snapshot.deviation]};"></div>
+                    <div class="timeline-time">${time}</div>
+                    <div>${snapshot.deviation} (${snapshot.stress_relative > 0 ? '+' : ''}${Math.round(snapshot.stress_relative * 100)}%)</div>
+                `;
+
+                timeline.insertBefore(item, timeline.firstChild);
+                while (timeline.children.length > 8) timeline.removeChild(timeline.lastChild);
+            }
+
+            async resetTracker() {
+                if (confirm('Are you sure you want to wipe your data and recalibrate?')) {
+                    await fetch('/api/reset', { method: 'POST' });
+                    window.location.reload();
+                }
+            }
+
+            async tagMood(tag) {
+                try {
+                    await fetch('/api/tag', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tag })
+                    });
+
+                    // Visual feedback
+                    const btn = event.target;
+                    const original = btn.textContent;
+                    btn.textContent = 'Saved!';
+                    btn.style.background = 'var(--accent-blue)';
+                    setTimeout(() => {
+                        btn.textContent = original;
+                        btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                    }, 1000);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            async checkInsights() {
+                try {
+                    const res = await fetch('/api/insight');
+                    const data = await res.json();
+
+                    const textEl = document.getElementById('insightText');
+                    const predEl = document.getElementById('predictionText');
+
+                    if (data.status === 'no_data') {
+                        textEl.textContent = "Waiting for data...";
+                        return;
+                    }
+
+                    if (data.similar_moments > 0) {
+                        let msg = `Your current structure (H=${data.current_pattern.h.toFixed(2)}) is similar to ${data.similar_moments} past moments.`;
+                        if (data.predicted_mood !== 'Unknown') {
+                            msg += ` Typical mood: ${data.predicted_mood}.`;
+                        }
+                        textEl.textContent = msg;
+                    } else {
+                        textEl.textContent = "Unique state. No matching historical patterns found yet.";
+                    }
+
+                    if (data.alert) {
+                        predEl.style.display = 'block';
+                        predEl.textContent = data.alert;
+                    } else {
+                        predEl.style.display = 'none';
+                    }
+
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        // Initialize
+        const tracker = new WellnessTracker();
+        window.tracker = tracker;
+
+        // Poll insights occasionally
+        setInterval(() => tracker.checkInsights(), 10000); // Every 10s
+    </script>
+</body>
+
+</html>

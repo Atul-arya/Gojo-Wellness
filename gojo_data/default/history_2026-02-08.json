@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2026-02-07T20:50:15.069254",
+    "h": 0.5,
+    "d": 1.6475,
+    "stress_relative": -0.34,
+    "state": "stressed",
+    "deviation": "low",
+    "tag": null
+  },
+  {
+    "timestamp": "2026-02-07T20:50:19.388618",
+    "h": 0.9795,
+    "d": 1.9144,
+    "stress_relative": -0.004,
+    "state": "agitated",
+    "deviation": "low",
+    "tag": null
+  },
+  {
+    "timestamp": "2026-02-07T20:50:29.087402",
+    "h": 1.0,
+    "d": 1.6922,
+    "stress_relative": -0.481,
+    "state": "stressed",
+    "deviation": "low",
+    "tag": null
+  },
+  {
+    "timestamp": "2026-02-07T20:50:38.234210",
+    "h": 0.6097,
+    "d": 1.7833,
+    "stress_relative": -0.211,
+    "state": "stressed",
+    "deviation": "low",
+    "tag": "Anxious"
+  },
+  {
+    "timestamp": "2026-02-08T00:17:30.696315",
+    "h": 0.5686,
+    "d": 1.8953,
+    "stress_relative": 0.083,
+    "state": "agitated",
+    "deviation": "low",
+    "tag": "Flow"
+  }
+]
